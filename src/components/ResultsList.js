@@ -1,41 +1,51 @@
 import React from 'react';
-import {View, Text, StyleSheet, FlatList, TouchableOpacity}  from 'react-native';
-import ResultsDetail from './ResultsDetail';
+import {Dimensions, SafeAreaView, StyleSheet, FlatList, TouchableOpacity, Image, View}  from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import formatData from '../utils/formatData';
 
-const ResultsList = ({title, results = []}) => {
+const numColumns = 2;
+const ResultsList = ({results}) => {
   const navigation = useNavigation();
-  const renderItem = ({item}) => {
+
+  const renderItem = ({ item }) => {
+    if (item.empty === true) {
+      return <View style={[styles.item, styles.itemInvisible]} />;
+    }
     return (
-      <TouchableOpacity onPress={() => navigation.navigate('ResultDetails', {id: item.id, name: item.name})}>
-        <ResultsDetail result={item} />
+      <TouchableOpacity onPress={() => navigation.navigate('ResultsShowScreen', 
+        {item})}
+        style={styles.item}
+      >
+        <Image style={styles.image} source={{uri: item.urls.small}} />
       </TouchableOpacity>
-      );
-  }
+    );
+  };
 
   return (
-    results.length ? <View style={styles.resultsList}>
-      <Text style={styles.title}>{title}</Text>
-      <FlatList 
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      data={results}
+    <SafeAreaView style={{flex: 1}}>
+      <FlatList
       keyExtractor={({id}) => id}
+      showsVerticalScrollIndicator={false}
+      data={formatData('id', results, numColumns)}
       renderItem={renderItem}
+      numColumns={numColumns}
       />
-    </View> : null 
+    </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-  resultsList: {
-    marginBottom: 10
+  item: {
+    flex: 1,
+    margin: 1,
+    height: Dimensions.get('window').width / numColumns
   },
-  title: {
-    fontSize: 18,
-    marginLeft: 15,
-    marginBottom: 5,
-    fontWeight: 'bold'
+  image: {
+    aspectRatio: 1,
+    resizeMode: 'cover'
+  },
+  itemInvisible: {
+    backgroundColor: 'transparent',
   }
 });
 

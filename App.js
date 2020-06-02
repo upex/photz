@@ -22,7 +22,7 @@ const App = () => {
         component={SearchScreen}
         />
         <Stack.Screen 
-        name="ResultDetails" 
+        name="ResultsShowScreen" 
         component={ResultsShowScreen}
         options={{title: 'Result Details'}}
         />

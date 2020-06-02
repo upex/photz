@@ -1,32 +1,31 @@
-import {useState, useEffect} from 'react';
+import {useState} from 'react';
 import unsplash, {API_DEFAULT_PARAMS} from '../api/unsplash';
 
 export default () => {
   const [error, setError] = useState(false);
   const [loader, setLoader] = useState(false);
-  const [results, setResults] = useState([]);
+  const [result, setResult] = useState({});
 
-  const searchAPI = async term => {
+  const downloadPhoto = async (id, cb) => {
     setLoader(true);
     setError(false);
     try {
-      const response = await unsplash.get('/photos', {
+      const response = await unsplash.get(`/photos/${id}/download`, {
         params: {
           ...API_DEFAULT_PARAMS
         }
       });
-      setResults(response.data);
+
+      setResult(response.data);
       setLoader(false);
+      cb(response.data)
     } catch (error) {
+      console.log('error==>', error)
       setError(true);
-      setResults([]);
+      setResult([]);
       setLoader(false);
     }
   }
 
-  useEffect(() => {
-    searchAPI('');
-  }, []);
-
-  return [searchAPI, error, setError, loader, results];
+  return {downloadPhoto, error, setError, loader, result};
 }
