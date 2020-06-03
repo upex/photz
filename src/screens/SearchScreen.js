@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useCallback, useMemo} from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import SerachBar from '../components/SearchBar';
 import useResults from '../hooks/useResults';
@@ -6,11 +6,29 @@ import ResultsList from '../components/ResultsList';
 
 const SearchScreen = () => {
   const [query, setQuery] = useState('');
-  const [searchAPI, error, setError, loader, results] = useResults();
+  const {isRefreshing, setIsRefreshing, searchAPI, error, setError, loader, pageNo, results} = useResults();
   
   const onChangeText = query => {
     setError(false);
     setQuery(query);
+  };
+
+  const handleOnEndReached = () => {
+    searchAPI(query, pageNo);
+  };
+
+  const handleOnRefresh = useCallback(() => {
+    setIsRefreshing(true);
+    searchAPI(query);
+  }, [query, isRefreshing]);
+  
+  const renderResultList = () => {
+    return <ResultsList 
+      loader={loader}
+      isRefreshing={isRefreshing}
+      results={results} 
+      handleOnRefresh={handleOnRefresh}
+      handleOnEndReached={handleOnEndReached} />
   }
 
   return (
@@ -19,13 +37,12 @@ const SearchScreen = () => {
       term={query}
       onChangeText={onChangeText}
       onEndEditing={() => searchAPI(query)}
-      loader={loader}
       />
       <View style={styles.infoStyle}>
         { error && (<Text style={{fontSize: 20, color: 'red'}}>Something went wrong!</Text>) }
-        { !error && !loader && !results.length ? (<Text style={{fontSize: 20}}>No results found!</Text>) : null }
+        { !error && !loader && !results.length ? (<Text style={{fontSize: 20}}>Start typing to see images!</Text>) : null }
       </View>
-      <ResultsList results={results} />
+      {renderResultList()}
     </>
     );
 }
@@ -36,4 +53,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default SearchScreen;
+export default React.memo(SearchScreen);

@@ -15,17 +15,15 @@ export default () => {
           ...API_DEFAULT_PARAMS
         }
       });
-
       setResult(response.data);
       setLoader(false);
       cb(response.data)
     } catch (error) {
-      console.log('error==>', error)
-      setError(true);
       setResult([]);
       setLoader(false);
+      setError(true);
     }
   }
 
-  return {downloadPhoto, error, setError, loader, result};
+  return {downloadPhoto, error, setError, loader, setLoader, result};
 }

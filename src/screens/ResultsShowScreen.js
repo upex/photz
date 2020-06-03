@@ -1,21 +1,32 @@
-import React, {useState, useEffect} from 'react';
-import {View, TouchableOpacity, Text, StyleSheet, Alert, CameraRoll, Image}  from 'react-native';
+import React, {useState, useRef, useEffect} from 'react';
+import {View, ActivityIndicator, TouchableOpacity, Text, StyleSheet, Alert, CameraRoll, Image}  from 'react-native';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import {Feather} from '@expo/vector-icons';
 import useResultDownload from '../hooks/useResultDownload';
+import useMountedRef from '../hooks/useMountedRef';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import * as Permissions from 'expo-permissions';
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
 
 const ResultsShowScreen = () => {
   const [name, setName] = useState('');
   const [uri, setUri] = useState('');
   const [profileLink, setProfileLink] = useState('');
   const [photoId, setPhotoId] = useState('');
+  const [loader, setLoader] = useState(false);
   const {downloadPhoto} = useResultDownload();
+  const isMountedRef = useMountedRef();
 
   const route = useRoute();
   const navigation = useNavigation();
+
+  const showLoader = () => (loader ? <ActivityIndicator size="small" /> : (
+    <TouchableOpacity onPress={downloadImage} style={styles.downLoadButton}>
+      <Text style={styles.downloadLabel}>Download</Text>
+      <Feather style={styles.downloadIconStyle} name='download' size={24} />
+    </TouchableOpacity>));
 
   const saveFile = async fileUri => {
       const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
@@ -23,6 +34,9 @@ const ResultsShowScreen = () => {
           const asset = await MediaLibrary.createAssetAsync(fileUri);
           await MediaLibrary.createAlbumAsync("Download", asset, false);
           Alert.alert('Image Successfully Downloaded.');
+          setLoader(false);
+      } else {
+        setLoader(false);
       }
   }
   
@@ -38,11 +52,14 @@ const ResultsShowScreen = () => {
   }, []);
 
   const downloadImage = () => {
+    setLoader(true);
     downloadPhoto(photoId, resp => {
-      const fileUri = FileSystem.documentDirectory + "hall.jpg";
+      const fileUri = FileSystem.documentDirectory + uuidv4() +'.jpg';
       FileSystem.downloadAsync(resp.url, fileUri)
       .then(({ uri }) => {
-          saveFile(uri);
+          if(isMountedRef.current){
+            saveFile(uri);
+          }
         })
         .catch(error => {
           console.error(error);
@@ -57,13 +74,10 @@ const ResultsShowScreen = () => {
      {uri ? <Image style={styles.image} source={{uri}} /> : null }
     </View>
     <View style={styles.attributeContainer}>
-      <Text>Photo by {name}</Text>
+      <Text>Photo by {name} on Unsplash</Text>
     </View>
     <View style={styles.downloadContainer}>
-        <TouchableOpacity onPress={downloadImage} style={styles.downLoadButton}>
-          <Text style={styles.downloadLabel}>Download</Text>
-          <Feather style={styles.downloadIconStyle} name='download' size={24} />
-        </TouchableOpacity>
+        {showLoader()}
     </View>
     </>
   );

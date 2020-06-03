@@ -1,8 +1,8 @@
 import React from 'react';
-import {ActivityIndicator, View, TextInput, StyleSheet} from 'react-native';
+import {View, TextInput, StyleSheet} from 'react-native';
 import {Feather} from '@expo/vector-icons';
 
-const SearhBar = ({term, loader, onChangeText, onEndEditing}) => {
+const SearhBar = ({term, onChangeText, onEndEditing}) => {
   return(
     <View style={styles.backgroundStyle}>
       <Feather name='search' style={styles.iconStyle} />
@@ -15,7 +15,6 @@ const SearhBar = ({term, loader, onChangeText, onEndEditing}) => {
       onChangeText={onChangeText}
       onEndEditing={() => onEndEditing(term)}
       />
-      { loader && <ActivityIndicator style={styles.loaderStyle} size="small" /> }
     </View>
   );
 };
@@ -37,12 +36,6 @@ const styles = StyleSheet.create({
     fontSize: 35,
     alignSelf: 'center',
     marginHorizontal: 15
-  },
-  loaderStyle: {
-    position: 'absolute',
-    color: '#00ff00',
-    right: 0,
-    top: 15
   }
 });
 
